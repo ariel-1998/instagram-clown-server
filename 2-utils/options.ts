@@ -6,17 +6,17 @@ export const corsOptions: CorsOptions = {
   credentials: true,
 };
 
-const maxAge = 1000 * 60 * 60 * 24; //24 hours
+export const maxAge = 1000 * 60 * 60 * 24; //24 hours
 
 export const sessionOptions: SessionOptions = {
   secret: process.env.COOKIE_SECRET,
   resave: false,
-  saveUninitialized: true,
-  name: "cook",
+  saveUninitialized: false, // saves sessionin store even if wasnt modified (if false session will be saved onlyif i modified it)
+  name: "session_id",
   cookie: {
     httpOnly: true,
-    // secure: true, //should uncomment it when deploying
-    sameSite: "none",
+    sameSite: false, //strict let the cookie get to the browser
+    // secure: true,
     maxAge,
   },
 };

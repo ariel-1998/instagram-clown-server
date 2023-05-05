@@ -10,11 +10,12 @@ import { createUser, login } from "../5-logic/authLogic";
 import path from "path";
 import { UploadedFile } from "express-fileupload";
 import { createJwt } from "../2-utils/jwt";
+import { CustomReq } from "../4-models/CustomReq";
 
 export const authRouter = Router();
 
 //create user.
-authRouter.post("/register", async (req, res) => {
+authRouter.post("/register", async (req: CustomReq, res) => {
   const rawUser: UserModel = req.body;
   const files = req.files;
 
@@ -62,10 +63,11 @@ authRouter.post("/register", async (req, res) => {
       }
     } else isImgMoved = true;
 
+    //send user instead
     const token = createJwt(user);
-    const coocieJwt = createJwt(user);
 
-    res.cookie("cookies", coocieJwt);
+    req.session.user = user;
+    console.log(req.sessionID);
     //if an image was successfully moved
     if (isImgMoved) return res.status(201).json(token);
 
@@ -76,7 +78,9 @@ authRouter.post("/register", async (req, res) => {
   }
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", async (req: CustomReq, res) => {
+  console.log(req.sessionID);
+
   const { username, password } = req.body as UserModel;
   //if there is no username or password
   if (!username || !password)
@@ -91,10 +95,12 @@ authRouter.post("/login", async (req, res) => {
       .status(403)
       .json({ message: "Username or password are incorrect" });
   //else create and send token
-  const token = createJwt(user);
-  const cookieJwt = createJwt(user);
-  res.cookie("cookie", cookieJwt);
-  res.status(200).json(token);
+  const token = createJwt(user); //check if needed
+  // const cookieJwt = createJwt(user);
+  // res.cookie("cookie", cookieJwt);
+  req.session.user = user;
+  // createCookie(res, req.sessionID);
+  res.status(200).send(token);
 });
 
 //create admin

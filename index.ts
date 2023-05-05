@@ -1,7 +1,7 @@
 import express, { json } from "express";
 import * as dotenv from "dotenv";
 import { authRouter } from "./6-controller/authController";
-import session, { MemoryStore } from "express-session"; //need to check memory store
+import session from "express-session"; //need to check memory store
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import { corsOptions, sessionOptions } from "./2-utils/options";
