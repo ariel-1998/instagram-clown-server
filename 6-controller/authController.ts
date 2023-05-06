@@ -9,7 +9,6 @@ import { ZodErrorModel } from "../4-models/ZodErrorModel";
 import { createUser, login } from "../5-logic/authLogic";
 import path from "path";
 import { UploadedFile } from "express-fileupload";
-import { createJwt } from "../2-utils/jwt";
 import { CustomReq } from "../4-models/CustomReq";
 
 export const authRouter = Router();
@@ -39,10 +38,7 @@ authRouter.post("/register", async (req: CustomReq, res) => {
     let isImgMoved = false;
 
     if (files) {
-      //need to validate there is only 1 image (need to validate it in zod)
-      // {
-      //consider checking if there is an image and if there are no more than 1 as a middleware
-      // }
+      //check file with zod schema
       const profileImg = files.profileImg as UploadedFile;
 
       //declare the path
@@ -63,16 +59,20 @@ authRouter.post("/register", async (req: CustomReq, res) => {
       }
     } else isImgMoved = true;
 
-    //send user instead
-    const token = createJwt(user);
+    //else save session by modifing it + save user data + authorize user for next requests
 
     req.session.user = user;
-    console.log(req.sessionID);
+    req.session.authorize = true;
+
+    //return the user without sensitive info like password
+    const userWithouPassword = { ...user };
+    delete userWithouPassword.password;
+
     //if an image was successfully moved
-    if (isImgMoved) return res.status(201).json(token);
+    if (isImgMoved) return res.status(201).json(userWithouPassword);
 
     //if an image wasnt moved
-    return res.status(206).json(token);
+    return res.status(206).json(userWithouPassword);
   } catch (error) {
     return res.status(409).json({ message: "Username already exist" });
   }
@@ -94,13 +94,16 @@ authRouter.post("/login", async (req: CustomReq, res) => {
     return res
       .status(403)
       .json({ message: "Username or password are incorrect" });
-  //else create and send token
-  const token = createJwt(user); //check if needed
-  // const cookieJwt = createJwt(user);
-  // res.cookie("cookie", cookieJwt);
+  //else save session by modifing it + save user data + authorize user for next requests
+
   req.session.user = user;
-  // createCookie(res, req.sessionID);
-  res.status(200).send(token);
+  req.session.authorize = true;
+
+  //return the user without sensitive info like password
+  const userWithouPassword = { ...user };
+  delete userWithouPassword.password;
+
+  res.status(200).send(userWithouPassword);
 });
 
 //create admin

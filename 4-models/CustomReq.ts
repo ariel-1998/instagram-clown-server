@@ -1,8 +1,12 @@
 import { Request } from "express";
 import { UserModel } from "./UserModel";
-import session from "express-session";
+import { Session } from "express-session";
 
 export interface CustomReq extends Request {
-  session: session.Session &
-    Partial<session.SessionData> & { user?: UserModel };
+  session: SessionModel;
+}
+
+interface SessionModel extends Session {
+  user: UserModel;
+  authorize: Boolean;
 }
