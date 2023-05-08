@@ -14,7 +14,8 @@ export async function getPostsByUser(
 FROM posts p
 LEFT JOIN likes l ON p.postImg = l.postId
 WHERE p.userId = ?
-GROUP BY p.postImg`;
+GROUP BY p.postImg
+ORDER BY createdAt`;
   const [res] = await execute<PostModel[]>(query, params);
   return res;
 }

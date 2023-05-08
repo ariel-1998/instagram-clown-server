@@ -3,10 +3,10 @@ import { UserModel } from "./UserModel";
 import { Session } from "express-session";
 
 export interface CustomReq extends Request {
-  session: SessionModel;
+  session: CustomSessionModel;
 }
 
-interface SessionModel extends Session {
+interface CustomSessionModel extends Session {
   user: UserModel;
   authorize: Boolean;
 }

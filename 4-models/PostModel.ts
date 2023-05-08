@@ -1,10 +1,12 @@
 import { z } from "zod";
+
 export interface PostModel {
   postImg: number;
   text: string;
   userId: number;
   likes: number;
   isLiked: boolean;
+  createdAt?: Date;
 }
 
 export const postSchema = z.object({
