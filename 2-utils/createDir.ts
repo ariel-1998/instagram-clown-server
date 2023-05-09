@@ -1,4 +1,3 @@
-import { UploadedFile } from "express-fileupload";
 import fs, { promises } from "fs";
 
 export async function createDir(path: string) {

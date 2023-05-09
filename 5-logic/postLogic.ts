@@ -37,12 +37,12 @@ GROUP BY p.postImg`;
   return res[0];
 }
 
-export async function createPost(post: PostModel): Promise<OkPacket> {
+export async function createPost(post: PostModel): Promise<number> {
   const { text, userId } = post;
   const params = [text, userId];
   const query = `INSERT INTO posts (text, userId) VALUES(?,?)`;
   const [res] = await execute<OkPacket>(query, params);
-  return res;
+  return res.insertId;
 }
 
 export async function updatePost() {} //check if neended

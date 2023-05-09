@@ -7,7 +7,6 @@ import fileUpload from "express-fileupload";
 import { corsOptions, sessionOptions } from "./2-utils/options";
 import { postRouter } from "./6-controller/postController";
 import { errorHandler } from "./3-middleware/errorHandler";
-import path from "path";
 dotenv.config();
 
 const app = express();
