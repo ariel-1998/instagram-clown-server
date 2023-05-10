@@ -38,20 +38,18 @@ GROUP BY p.postImg`;
 }
 
 export async function createPost(post: PostModel): Promise<number> {
-  const { text, userId } = post;
-  const params = [text, userId];
-  const query = `INSERT INTO posts (text, userId) VALUES(?,?)`;
+  const { text, userId, location } = post;
+  const params = [text, userId, location];
+  const query = `INSERT INTO posts (text, userId, location) VALUES(?,?,?)`;
   const [res] = await execute<OkPacket>(query, params);
   return res.insertId;
 }
 
-export async function updatePost() {} //check if neended
-
 export async function deletePost(
   postId: number,
   userId: number
-): Promise<OkPacket> {
+): Promise<boolean> {
   const query = `DELETE FROM posts WHERE postImg = ? AND userId = ?`;
   const [res] = await execute<OkPacket>(query, [postId, userId]);
-  return res;
+  return res.affectedRows > 0;
 }

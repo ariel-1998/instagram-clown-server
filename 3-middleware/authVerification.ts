@@ -6,11 +6,12 @@ export const authVerification = (role?: UserRole) => {
   return (req: CustomReq, res: Response, next: NextFunction) => {
     //check if condition is good
     //if not logged in
-    if (!req.session.authorize)
+    if (req.session.authorize !== true)
       return res.status(401).json({ message: "You are not logged in!" });
 
     //if role is forbidden
-    if (req.session.user.role !== role)
+
+    if (role && req.session.user.role !== role)
       return res.status(403).json({ message: "This action is forbidden!" });
 
     next();
