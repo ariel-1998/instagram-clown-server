@@ -32,31 +32,21 @@ export async function createUser(user: UserModel): Promise<UserModel> {
 
   const [res] = await execute<OkPacket>(query, params);
   const id = res.insertId;
-
-  const profileImg = await addProfileImg(id);
-
   return {
     id,
-    profileImg,
     username,
     aboutMe,
     role,
     isActive,
-    password: "",
+    isFollowed: true,
   };
 }
 
-export async function getUserById(id: number): Promise<UserModel> {
-  const query = `SELECT * FROM users WHERE id = ?`;
-  const [res] = await execute<UserModel[]>(query, [id]);
-  return res[0];
-}
-
 //add image to DB after the insertId is returned after user creation
-export async function addProfileImg(id: Number): Promise<string> {
-  const query = `UPDATE users SET profileImg = ? WHERE id = ?`;
-  //check if need to make it `${id + IMG_TYPE}`
-  const params = [id + IMG_TYPE, id];
-  await execute<OkPacket>(query, params);
-  return id + IMG_TYPE;
-}
+// export async function addProfileImg(id: Number): Promise<string> {
+//   const query = `UPDATE users SET profileImg = ? WHERE id = ?`;
+//   //check if need to make it `${id + IMG_TYPE}`
+//   const params = [id + IMG_TYPE, id];
+//   await execute<OkPacket>(query, params);
+//   return id + IMG_TYPE;
+// }

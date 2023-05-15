@@ -7,6 +7,7 @@ import fileUpload from "express-fileupload";
 import { corsOptions, sessionOptions } from "./2-utils/options";
 import { postRouter } from "./6-controller/postController";
 import { errorHandler } from "./3-middleware/errorHandler";
+import { userRouter } from "./6-controller/userController";
 dotenv.config();
 
 const app = express();
@@ -17,7 +18,8 @@ app.use(json());
 app.use(fileUpload());
 app.use(session(sessionOptions));
 
-app.use("/api", authRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 app.use("/api/posts", postRouter);
 
 app.use(errorHandler);
