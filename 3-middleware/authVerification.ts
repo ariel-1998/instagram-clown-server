@@ -11,9 +11,10 @@ export const authVerification = (role?: UserRole) => {
 
     //if role is forbidden
 
-    if (role && req.session.user.role !== role)
+    if (role && req.session.user.role !== role) {
       return res.status(403).json({ message: "This action is forbidden!" });
-
+    }
+    console.log("verifing");
     next();
   };
 };

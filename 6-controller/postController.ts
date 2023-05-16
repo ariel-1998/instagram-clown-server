@@ -21,6 +21,8 @@ export const postRouter = Router();
 postRouter.use(authVerification());
 
 postRouter.get("/", async (req: CustomReq, res) => {
+  console.log("/post get");
+
   //need to return image too with another route
   const { id: postUserId } = req.body as UserModel;
   const { id: sessionUserId } = req.session.user;
@@ -36,6 +38,7 @@ postRouter.get("/", async (req: CustomReq, res) => {
 
 postRouter.get("/:postId", async (req: CustomReq, res) => {
   //need to return image too with another route
+  console.log("/post get id");
 
   const postId = +req.params.postId;
   const { id: userId } = req.session.user;
@@ -47,15 +50,17 @@ postRouter.get("/:postId", async (req: CustomReq, res) => {
 });
 
 postRouter.post("/", async (req: CustomReq, res, next) => {
+  console.log("/post post");
+
   const post: PostModel = req.body;
   post.userId = req.session.user.id;
+  let insertId: number;
 
-  if (!req.files?.postImg)
-    return res.status(400).json({ message: "Image is required" });
-
+  if (!req.files?.postImg) {
+    return res.status(400).json({ message: "Media required" });
+  }
   const files = req.files.postImg as UploadedFile[];
 
-  let insertId: number;
   try {
     //need to also create file schema
     postSchema.parse(post);
@@ -75,12 +80,10 @@ postRouter.post("/", async (req: CustomReq, res, next) => {
 
   try {
     await createDir(dirPath);
-    let fileCount = 1;
 
-    files.forEach(async (file) => {
-      const filePath = path.join(dirPath, `${fileCount}${IMG_TYPE}`); //check if working properly
+    files.forEach(async (file, index) => {
+      const filePath = path.join(dirPath, `${index + 1}${IMG_TYPE}`); //check if working properly
       await file.mv(filePath);
-      fileCount++;
     });
   } catch (error) {
     //add delete post from DB if images throw an error
@@ -92,8 +95,10 @@ postRouter.post("/", async (req: CustomReq, res, next) => {
 });
 
 postRouter.delete("/:postId", async (req: CustomReq, res, next) => {
+  console.log("/post delete");
+
   try {
-    const userId = req.session.user.id;
+    const { id: userId, postsAmount } = req.session.user;
     const postId = req.params.postId;
 
     const isDeleted = await deletePost(+postId, userId);
@@ -104,6 +109,7 @@ postRouter.delete("/:postId", async (req: CustomReq, res, next) => {
         .json({ message: "You are not allowed to delet it" });
     }
 
+    req.session.user.postsAmount = postsAmount - 1;
     const dirPath = path.join(__dirname, "..", "assets", "images", postId);
 
     if (isDeleted && fs.existsSync(dirPath)) await promises.rmdir(dirPath);

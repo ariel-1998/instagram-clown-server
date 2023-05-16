@@ -9,4 +9,5 @@ export interface CustomReq extends Request {
 interface CustomSessionModel extends Session {
   user: UserModel;
   authorize: Boolean;
+  redirected: boolean;
 }
