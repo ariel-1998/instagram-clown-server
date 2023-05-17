@@ -22,22 +22,21 @@ export async function login(
 
 //register
 export async function createUser(user: UserModel): Promise<UserModel> {
-  const { username, password, aboutMe, role, isActive } = user;
+  const { username, password, role, isActive } = user;
   const hashedPassword = encryptPassword(password);
-  const params = [username, hashedPassword, aboutMe, role];
-
+  const params = [username, hashedPassword, role];
   const query = `INSERT INTO users 
-    (username, password, aboutMe, role)
-    VALUES(?,?,?,?)`;
+    (username, password, role)
+    VALUES(?,?,?)`;
 
   const [res] = await execute<OkPacket>(query, params);
   const id = res.insertId;
   return {
     id,
     username,
-    aboutMe,
     role,
     isActive,
+    aboutMe: "",
     isFollowed: true,
     followersAmout: 0,
     followingAmount: 0,

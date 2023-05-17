@@ -1,6 +1,7 @@
 import { OkPacket } from "mysql2";
 import { execute } from "../2-utils/dal";
 import { UserModel } from "../4-models/UserModel";
+import { IMG_TYPE } from "./authLogic";
 
 export async function getUserInfo(
   sessionUserId: number,

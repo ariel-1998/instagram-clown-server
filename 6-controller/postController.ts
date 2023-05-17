@@ -14,17 +14,14 @@ import { ErrorHandlerModel } from "../4-models/ErrorModel";
 import { UploadedFile } from "express-fileupload";
 import path from "path";
 import { createDir } from "../2-utils/createDir";
-import { IMG_TYPE } from "../5-logic/authLogic";
 import fs, { promises } from "fs";
 
 export const postRouter = Router();
 postRouter.use(authVerification());
 
-postRouter.get("/", async (req: CustomReq, res) => {
-  console.log("/post get");
-
+postRouter.get("/:postUserId", async (req: CustomReq, res) => {
   //need to return image too with another route
-  const { id: postUserId } = req.body as UserModel;
+  const postUserId = +req.params.postUserId;
   const { id: sessionUserId } = req.session.user;
 
   if (!postUserId)
@@ -38,8 +35,6 @@ postRouter.get("/", async (req: CustomReq, res) => {
 
 postRouter.get("/:postId", async (req: CustomReq, res) => {
   //need to return image too with another route
-  console.log("/post get id");
-
   const postId = +req.params.postId;
   const { id: userId } = req.session.user;
 
@@ -82,8 +77,8 @@ postRouter.post("/", async (req: CustomReq, res, next) => {
     await createDir(dirPath);
 
     files.forEach(async (file, index) => {
-      const filePath = path.join(dirPath, `${index + 1}${IMG_TYPE}`); //check if working properly
-      await file.mv(filePath);
+      const filePath = path.join(dirPath, `${index + 1}${file.mimetype}`); //check if working properly
+      console.log(filePath);
     });
   } catch (error) {
     //add delete post from DB if images throw an error

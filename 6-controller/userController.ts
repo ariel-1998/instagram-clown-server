@@ -9,15 +9,12 @@ import { getUserInfo, updateUser } from "../5-logic/UserLogic";
 import { createDir } from "../2-utils/createDir";
 import path from "path";
 import fs, { promises } from "fs";
-import { IMG_TYPE } from "../5-logic/authLogic";
 import { ErrorHandlerModel } from "../4-models/ErrorModel";
 
 export const userRouter = Router();
 userRouter.use(authVerification());
 
 userRouter.get("/:userId", async (req: CustomReq, res) => {
-  console.log("/users get");
-
   const sessionUserId = req.session.user.id;
   const userId = +req.params.userId;
   //check if redirected for status code 302
@@ -48,8 +45,9 @@ userRouter.get("/:userId", async (req: CustomReq, res) => {
 
 userRouter.put("/", async (req: CustomReq, res, next) => {
   const user: Omit<UserModel, "username" | "password"> = req.body;
-  user.id = req.session.user.id;
+  const { id, profileImg } = req.session.user;
   const image = req.files?.profileImg as UploadedFile;
+  user.id = id;
 
   try {
     imageSchema
@@ -58,40 +56,30 @@ userRouter.put("/", async (req: CustomReq, res, next) => {
           args.mimetype.startsWith("image/") && !args.mimetype.endsWith("gif"),
         "Profile image can only be image file"
       )
-      .optional()
       .parse(image);
 
     userSchema.pick({ aboutMe: true }).parse(user);
   } catch (e) {
-    next(new ZodErrorModel(e));
+    return next(new ZodErrorModel(e));
   }
 
   try {
     await updateUser(user);
+  } catch (error) {
+    return res.status(400).json("aboutMe and profileImg are required");
+  }
+
+  try {
     const dirPath = path.join(__dirname, "..", "1-assets", "profiles");
-    const imgPath = path.join(dirPath, `${user.id}${IMG_TYPE}`);
+    const imgPath = path.join(dirPath, profileImg);
+
     await createDir(dirPath);
     if (fs.existsSync(imgPath)) {
       await promises.rm(imgPath);
     }
     if (image) await image.mv(imgPath);
   } catch (error) {
-    next(new ErrorHandlerModel());
+    return next(new ErrorHandlerModel());
   }
   res.sendStatus(200);
 });
-
-// userRouter.post("/", async (req: CustomReq, res, next) => {
-//   //update user settings
-//   // Object.keys(req.files.postImg).forEach((file) => console.log(file));
-//   const files = req?.files?.postImg;
-
-//   try {
-//     mediaSchema.parse(files);
-//   } catch (error) {
-//     return next(new ZodErrorModel(error));
-//   }
-//   // if (!files) return res.status(400).json({ message: "Media required" });
-//   // Array.isArray(files);
-//   res.sendStatus(200);
-// });
