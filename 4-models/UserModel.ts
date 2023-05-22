@@ -5,7 +5,7 @@ export enum UserRole {
   Admin = "admin",
 }
 
-export enum IsActive {
+export enum BooleanDB {
   True = 1,
   false = 0,
 }
@@ -22,7 +22,7 @@ export interface UserModel {
   password?: string;
   aboutMe: string;
   role: UserRole;
-  isActive: IsActive;
+  isActive: BooleanDB;
   isFollowed: boolean;
   followersAmout: number;
   followingAmount: number;
@@ -44,7 +44,7 @@ export const userSchema = z.object({
     .max(100, "About section can contain up to 100 chars")
     .optional(),
   role: z.nativeEnum(UserRole),
-  isActive: z.nativeEnum(IsActive),
+  isActive: z.nativeEnum(BooleanDB),
 });
 
 // export const passwordSchema = z

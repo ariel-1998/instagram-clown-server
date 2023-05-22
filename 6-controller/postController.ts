@@ -8,7 +8,7 @@ import {
 import { PostModel, postSchema } from "../4-models/PostModel";
 import { ZodErrorModel } from "../4-models/ZodErrorModel";
 import { CustomReq } from "../4-models/CustomReq";
-import { UserModel, UserRole } from "../4-models/UserModel";
+import { BooleanDB, UserModel, UserRole } from "../4-models/UserModel";
 import { authVerification } from "../3-middleware/authVerification";
 import { ErrorHandlerModel } from "../4-models/ErrorModel";
 import { UploadedFile } from "express-fileupload";
@@ -25,7 +25,7 @@ postRouter.get("/:postUserId", async (req: CustomReq, res) => {
   const { id: sessionUserId } = req.session.user;
 
   if (!postUserId)
-    return res.status(400).json({ message: "id of posts creator is required" });
+    return res.status(400).json({ message: "id of post creator is required" });
 
   const posts = await getPostsByUser(sessionUserId, postUserId);
 
@@ -44,9 +44,8 @@ postRouter.get("/:postId", async (req: CustomReq, res) => {
   res.sendStatus(404);
 });
 
+//need to check if trigger in DB works and generate  postImg number as auto_icrement
 postRouter.post("/", async (req: CustomReq, res, next) => {
-  console.log("/post post");
-
   const post: PostModel = req.body;
   post.userId = req.session.user.id;
   let insertId: number;
@@ -54,7 +53,10 @@ postRouter.post("/", async (req: CustomReq, res, next) => {
   if (!req.files?.postImg) {
     return res.status(400).json({ message: "Media required" });
   }
-  const files = req.files.postImg as UploadedFile[];
+  const files = req.files.postImg as UploadedFile | UploadedFile[];
+  //make the post data add the isSingleFile prop by checking if its an array or not
+  if (Array.isArray(files)) post.isSingleImg = BooleanDB.false;
+  else post.isSingleImg = BooleanDB.True;
 
   try {
     //need to also create file schema
@@ -75,11 +77,15 @@ postRouter.post("/", async (req: CustomReq, res, next) => {
 
   try {
     await createDir(dirPath);
-
-    files.forEach(async (file, index) => {
-      const filePath = path.join(dirPath, `${index + 1}${file.mimetype}`); //check if working properly
+    if (Array.isArray(files)) {
+      files.forEach(async (file, index) => {
+        const filePath = path.join(dirPath, `${index + 1}${file.mimetype}`); //check if working properly
+        console.log(filePath);
+      });
+    } else {
+      const filePath = path.join(dirPath, `1${files.mimetype}`); //check if working properly
       console.log(filePath);
-    });
+    }
   } catch (error) {
     //add delete post from DB if images throw an error
     await deletePost(insertId, post.userId);

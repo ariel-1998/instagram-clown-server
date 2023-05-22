@@ -6,7 +6,7 @@ import { encryptPassword } from "../2-utils/encryptPassword";
 
 dotenv.config();
 
-export const IMG_TYPE = ".png";
+export const IMG_TYPE = ".jpg";
 
 //login
 export async function login(
@@ -37,6 +37,7 @@ export async function createUser(user: UserModel): Promise<UserModel> {
     role,
     isActive,
     aboutMe: "",
+    profileImg: id + IMG_TYPE,
     isFollowed: true,
     followersAmout: 0,
     followingAmount: 0,

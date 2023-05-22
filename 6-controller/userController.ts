@@ -5,7 +5,11 @@ import { UploadedFile } from "express-fileupload";
 import { imageSchema, mediaSchema } from "../4-models/PostModel";
 import { ZodErrorModel } from "../4-models/ZodErrorModel";
 import { UserModel, userSchema } from "../4-models/UserModel";
-import { getUserInfo, updateUser } from "../5-logic/UserLogic";
+import {
+  getSuggestedUsers,
+  getUserInfo,
+  updateUser,
+} from "../5-logic/UserLogic";
 import { createDir } from "../2-utils/createDir";
 import path from "path";
 import fs, { promises } from "fs";
@@ -14,32 +18,22 @@ import { ErrorHandlerModel } from "../4-models/ErrorModel";
 export const userRouter = Router();
 userRouter.use(authVerification());
 
+userRouter.get("/", async (req: CustomReq, res) => {
+  const userId = +req.session.user.id;
+  const users = await getSuggestedUsers(userId);
+  if (users) return res.status(200).json(users);
+  res.sendStatus(404);
+});
+
 userRouter.get("/:userId", async (req: CustomReq, res) => {
   const sessionUserId = req.session.user.id;
   const userId = +req.params.userId;
-  //check if redirected for status code 302
-  const isRedirected = req.session.redirected;
-
-  //check if requests his own profile and retrive it from session storage
-  if (sessionUserId === userId && !isRedirected) {
-    const storedUser = { ...req.session.user };
-    delete storedUser.password;
-    return res.status(200).json(storedUser);
-  }
 
   const requestedUser = await getUserInfo(sessionUserId, userId);
   if (!requestedUser) return res.sendStatus(404);
 
-  //if the user was redirected from auth routes
-  if (isRedirected) {
-    //make the user followed because he cannot follow himself and save session
-    requestedUser.isFollowed = true;
-    req.session.user = { ...requestedUser };
-    //reset redirect to false for next times
-    req.session.redirected = false;
-  }
+  req.session.user = { ...requestedUser };
   delete requestedUser.password;
-  if (isRedirected) return res.status(302).json(requestedUser);
   res.status(200).json(requestedUser);
 });
 

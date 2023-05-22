@@ -1,16 +1,18 @@
 import { z } from "zod";
+import { BooleanDB } from "./UserModel";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 export interface PostModel {
   id: number;
+  userId: number;
   postImg: number;
   text: string;
-  userId: number;
+  title: string;
+  createdAt?: Date;
+  isSingleImg?: BooleanDB; //remember to implement it in code
   likes: number;
   isLiked: boolean;
-  createdAt?: Date;
-  title: string;
 }
 
 export const postSchema = z.object({

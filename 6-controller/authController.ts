@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  IsActive,
+  BooleanDB,
   PasswordModel,
   UserModel,
   UserRole,
@@ -13,6 +13,7 @@ import { CustomReq } from "../4-models/CustomReq";
 import { authVerification } from "../3-middleware/authVerification";
 import { encryptPassword } from "../2-utils/encryptPassword";
 import { ErrorHandlerModel } from "../4-models/ErrorModel";
+import { getUserInfo } from "../5-logic/UserLogic";
 
 export const authRouter = Router();
 
@@ -20,7 +21,7 @@ export const authRouter = Router();
 authRouter.post("/register", async (req: CustomReq, res, next) => {
   const rawUser: UserModel = req.body;
   //make user active on registration and defaulting role = user
-  rawUser.isActive = IsActive.True;
+  rawUser.isActive = BooleanDB.True;
   rawUser.role = UserRole.User;
 
   try {
@@ -31,6 +32,7 @@ authRouter.post("/register", async (req: CustomReq, res, next) => {
 
   try {
     const user = await createUser(rawUser);
+    console.log(user);
     req.session.user = { ...user };
     req.session.authorize = true;
     //return the user without sensitive info like password
@@ -44,10 +46,14 @@ authRouter.post("/register", async (req: CustomReq, res, next) => {
 authRouter
   .route("/login")
   .get(authVerification(), (req: CustomReq, res) => {
-    const id = req.session.user.id;
-    req.session.redirected = true;
-    res.redirect(302, `/api/users/${id}`);
+    console.log("get login");
+    const user = { ...req.session.user };
+    delete user.password;
+    console.log(user);
+
+    res.status(200).json(user);
   })
+
   .post(async (req: CustomReq, res) => {
     const { username, password } = req.body as UserModel;
     //if there is no username or password
@@ -65,14 +71,14 @@ authRouter
         .json({ message: "Username or password are incorrect" });
     }
     //else save session by modifing it + save user data + authorize user for next requests
-    if (user.isActive === IsActive.false) {
+    if (user.isActive === BooleanDB.false) {
       return res.status(403).json({ message: "Account has been deactivated" });
     }
-    req.session.user = { ...user };
-    req.session.authorize = true;
-    req.session.redirected = true;
+    const userData = await getUserInfo(user.id, user.id);
 
-    res.redirect(302, `/api/users/${user.id}`);
+    req.session.user = { ...userData };
+    req.session.authorize = true;
+    res.status(200).json(userData);
   });
 
 //also add username change
