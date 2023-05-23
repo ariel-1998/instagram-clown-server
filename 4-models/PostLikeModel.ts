@@ -1,4 +1,4 @@
-export interface PostLikesModel {
+export interface PostLikeModel {
   userId: number;
   postId: number;
 }

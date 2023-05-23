@@ -3,7 +3,7 @@ import {
   createPost,
   deletePost,
   getPostByPostId,
-  getPostsByUser,
+  getPaginatedPostsByUser,
 } from "../5-logic/postLogic";
 import { PostModel, postSchema } from "../4-models/PostModel";
 import { ZodErrorModel } from "../4-models/ZodErrorModel";
@@ -21,13 +21,22 @@ postRouter.use(authVerification());
 
 postRouter.get("/:postUserId", async (req: CustomReq, res) => {
   //need to return image too with another route
-  const postUserId = +req.params.postUserId;
   const { id: sessionUserId } = req.session.user;
-
+  const postUserId = +req.params.postUserId;
+  const pageNum = +req.query.pageNum;
+  if (!pageNum || pageNum <= 0 || isNaN(pageNum)) {
+    return res
+      .status(400)
+      .json({ message: "pageNum is required to be a positive number" });
+  }
   if (!postUserId)
     return res.status(400).json({ message: "id of post creator is required" });
 
-  const posts = await getPostsByUser(sessionUserId, postUserId);
+  const posts = await getPaginatedPostsByUser(
+    sessionUserId,
+    postUserId,
+    pageNum
+  );
 
   if (posts) return res.status(200).json(posts);
   res.sendStatus(404);
@@ -119,4 +128,9 @@ postRouter.delete("/:postId", async (req: CustomReq, res, next) => {
   } catch (error) {
     next(new ErrorHandlerModel());
   }
+});
+
+//files need to complete
+postRouter.get("/files/:filesDir", (req, res) => {
+  const filesDir = req.params.filesDir;
 });

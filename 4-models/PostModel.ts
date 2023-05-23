@@ -13,6 +13,7 @@ export interface PostModel {
   isSingleImg?: BooleanDB; //remember to implement it in code
   likes: number;
   isLiked: boolean;
+  commentsAmount: number;
 }
 
 export const postSchema = z.object({

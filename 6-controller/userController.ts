@@ -28,7 +28,7 @@ userRouter.get("/", async (req: CustomReq, res) => {
 userRouter.get("/:userId", async (req: CustomReq, res) => {
   const sessionUserId = req.session.user.id;
   const userId = +req.params.userId;
-
+  // if (sessionUserId === userId) return res.status(200).json(req.session.user); // check if needed
   const requestedUser = await getUserInfo(sessionUserId, userId);
   if (!requestedUser) return res.sendStatus(404);
 
@@ -76,4 +76,18 @@ userRouter.put("/", async (req: CustomReq, res, next) => {
     return next(new ErrorHandlerModel());
   }
   res.sendStatus(200);
+});
+
+//images
+userRouter.get("/image/:profilePath", (req, res, next) => {
+  const profilePath = req.params.profilePath;
+  const imgPath = path.join(
+    __dirname,
+    "..",
+    "1-assets",
+    "profiles",
+    profilePath
+  );
+  if (!fs.existsSync(imgPath)) return res.sendStatus(404);
+  res.status(200).sendFile(imgPath);
 });
